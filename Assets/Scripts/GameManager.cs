@@ -41,9 +41,14 @@ public class GameManager : MonoBehaviour
     [Header("Keyboard Input")]
     [SerializeField] private bool useKeyboardInput = true;
 
+    [Header("Joystick Input")]
+    [SerializeField, Range(0f, 1f)] private float joystickDeadzone = 0.2f;
+    [SerializeField, Range(0f, 1f)] private float joystickPressThreshold = 0.5f;
+
     private int currentLane;
     private Vector3 initialPlayerPosition;
     private Quaternion initialPlayerRotation;
+    private bool joystickInputArmed = true;
 
     public GameState CurrentState => currentState;
     public int CurrentLane => currentLane;
@@ -115,10 +120,12 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        if (!useKeyboardInput)
-            return;
+        if (useKeyboardInput)
+        {
+            HandleKeyboardInput();
+        }
 
-        HandleKeyboardInput();
+        HandleJoystickInput();
     }
 
     private void HandleKeyboardInput()
@@ -138,6 +145,49 @@ public class GameManager : MonoBehaviour
             Keyboard.current.rightArrowKey.wasPressedThisFrame)
         {
             MoveRight();
+        }
+    }
+
+    private void HandleJoystickInput()
+    {
+        float horizontalInput = 0f;
+
+        foreach (Gamepad gamepad in Gamepad.all)
+        {
+            float input = gamepad.leftStick.ReadValue().x;
+            if (Mathf.Abs(input) > Mathf.Abs(horizontalInput))
+            {
+                horizontalInput = input;
+            }
+        }
+
+        foreach (Joystick joystick in Joystick.all)
+        {
+            float input = joystick.stick.ReadValue().x;
+            if (Mathf.Abs(input) > Mathf.Abs(horizontalInput))
+            {
+                horizontalInput = input;
+            }
+        }
+
+        if (Mathf.Abs(horizontalInput) <= joystickDeadzone)
+        {
+            joystickInputArmed = true;
+            return;
+        }
+
+        if (!joystickInputArmed)
+            return;
+
+        if (horizontalInput <= -joystickPressThreshold)
+        {
+            MoveLeft();
+            joystickInputArmed = false;
+        }
+        else if (horizontalInput >= joystickPressThreshold)
+        {
+            MoveRight();
+            joystickInputArmed = false;
         }
     }
 
