@@ -27,8 +27,9 @@ public class SoundEffectsManager : MonoBehaviour
     [SerializeField] private Canvas uiCanvas;
     [SerializeField] private Button volumeButton;
     [SerializeField] private TMP_Text volumeButtonText;
-    [SerializeField] private GameObject volumeOnIcon;
-    [SerializeField] private GameObject volumeOffIcon;
+    [SerializeField] private Image volumeIcon;
+    [SerializeField] private Sprite volumeOnSprite;
+    [SerializeField] private Sprite volumeOffSprite;
     [SerializeField] private bool startMuted;
 
     private Text fallbackVolumeButtonText;
@@ -136,14 +137,10 @@ public class SoundEffectsManager : MonoBehaviour
             effectsSource.mute = muted;
         }
 
-        if (volumeOnIcon != null)
+        if (volumeIcon != null)
         {
-            volumeOnIcon.SetActive(!muted);
-        }
-
-        if (volumeOffIcon != null)
-        {
-            volumeOffIcon.SetActive(muted);
+            volumeIcon.sprite = muted ? volumeOffSprite : volumeOnSprite;
+            volumeIcon.enabled = volumeIcon.sprite != null;
         }
 
         if (volumeButtonText != null)
